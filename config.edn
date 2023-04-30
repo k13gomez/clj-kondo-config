@@ -1,0 +1,8 @@
+{:lint-as {rules.core/defun clojure.core/defn
+           rules.core/defn clojure.core/defn
+           rules.core/defdata clojure.core/def
+           rules.data/defun clojure.core/defn
+           rules.data/defn clojure.core/defn
+           rules.data/defdata clojure.core/def}
+ :hooks {:analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
+                        clara.rules/defrule hooks.clara-rules/analyze-defrule-macro}}}

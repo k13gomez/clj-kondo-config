@@ -1,0 +1,11 @@
+{:paths ["src"]
+ :deps {org.clojure/clojure {:mvn/version "1.10.1"}
+        clj-kondo/clj-kondo {:mvn/version "2023.04.14"}}
+ ;for more examples of aliases see: https://github.com/seancorfield/dot-clojure
+ :aliases
+ {:repl {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}
+                      cider/cider-nrepl {:mvn/version "0.25.6"}}
+         :main-opts ["-m" "nrepl.cmdline" "--interactive" "--middleware" "[\"cider.nrepl/cider-middleware\"]"]}}
+ :mvn/repos
+ {"central" {:url "https://repo1.maven.org/maven2/"}
+  "clojars" {:url "https://repo.clojars.org/"}}}
