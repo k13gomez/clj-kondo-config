@@ -134,7 +134,7 @@
                           (first children))
         input-token (api/token-node (gensym 'input))
         input-args (api/vector-node
-                     (vector '& input-token))
+                     [input-token])
         [production-args & condition-seq] (if production-opts (rest children) children)
         condition-bindings (analyze-conditions condition-seq [] input-token production-args)
         production-bindings (apply concat [production-args input-token] condition-bindings)
@@ -168,7 +168,7 @@
                           (first children))
         input-token (api/token-node (gensym 'input))
         input-args (api/vector-node
-                     (vector '& input-token))
+                     [input-token])
         empty-args (api/vector-node [])
         production-seq (if production-opts (rest children) children)
         [condition-seq _ body-seq] (partition-by (comp #{'=>} node-value) production-seq)
