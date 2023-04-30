@@ -7,7 +7,7 @@
   [:foo/fact]
   [?foo-data <- :foo/data]
   [:not [:foo/not [{:keys [foo-not]}] (= foo-not ?foo-value)]]
-  #_[:and
+  [:and
    [:foo/thing1]
    [:not [:foo/begone [{:keys [foo-not]}]
           (= foo-not ?foo-not)
@@ -17,13 +17,13 @@
    [:or
     [:foo/maybe1]
     [:foo/maybe2 [{:keys [foo-maybe]}] (= foo-maybe ?foo-value)]]]
-  #_[:exists
+  [:exists
    [:foo/required1 [{:keys [foo-required]}] (true? foo-required)]]
-  #_[:exists
+  [:exists
    [:foo/required]]
-  #_[?acc-result1 <- (acc/grouping-by :foo-hash) :from [:foo/item1 [{:keys [foo-item]}] (= foo-item ?foo-value)]]
-  #_[?acc-result2 <- (acc/all) :from [:foo/item2]]
-  #_[?acc-result3 <- (acc/all) :from [:foo/item3 (= foo-item ?foo-item)]] ;;; should return unresolved-symbol
+  [?acc-result1 <- (acc/grouping-by :foo-hash) :from [:foo/item1 [{:keys [foo-item]}] (= foo-item ?foo-value)]]
+  [?acc-result2 <- (acc/all) :from [:foo/item2]]
+  [?acc-result3 <- (acc/all) :from [:foo/item3 (= foo-item ?foo-item)]] ;;; should return unresolved-symbol
   [:test (and (some? ?foo-value)
               (some? ?fact)
               (seq ?acc-result1)
