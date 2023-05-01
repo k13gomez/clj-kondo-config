@@ -166,7 +166,7 @@
                                 (vec production-output))))
         new-node (with-meta
                    (api/list-node
-                     (cond-> (list (api/token-node 'defn) production-name)
+                     (cond-> (list (api/token-node 'clojure.core/defn) production-name)
                        production-docs (concat [production-docs])
                        :always (concat [input-args])
                        production-opts (concat [production-opts])
@@ -205,7 +205,7 @@
                               body-seq))
         new-node (with-meta
                    (api/list-node
-                     (cond-> (list (api/token-node 'defn) production-name)
+                     (cond-> (list (api/token-node 'clojure.core/defn) production-name)
                        production-docs (concat [production-docs])
                        :always (concat [input-args])
                        production-opts (concat [production-opts])

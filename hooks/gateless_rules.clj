@@ -28,7 +28,7 @@
                    var-fact (assoc :clj-kondo/ignore [:clojure-lsp/unused-public-var]))
         new-node (with-meta
                    (api/list-node
-                     (cond-> (list (api/token-node 'defn) var-name)
+                     (cond-> (list (api/token-node 'clojure.core/defn) var-name)
                        var-docs (concat [var-docs])
                        :always (concat [var-args] body)))
                    new-meta)]
@@ -48,7 +48,7 @@
         new-node (with-meta
                    (api/list-node
                      (list*
-                       (api/token-node 'def)
+                       (api/token-node 'clojure.core/def)
                        var-name
                        body))
                    new-meta)]

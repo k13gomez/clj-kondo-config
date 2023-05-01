@@ -18,4 +18,9 @@
         {:node (api/parse-string "(defun foo-bar :foo/bar [foo] foo)")}) :node api/sexpr prn)
   (-> (gateless-rules/analyze-defdata-macro
         {:node (api/parse-string "(defdata loan-batch :loaders/batch \"foobar\")")}) :node api/sexpr prn)
+
+  (-> (gateless-rules/analyze-defun-macro
+        {:node (api/parse-string "(defun update-map [m f]
+                                    (reduce-kv (fn [m k v]
+                                                 (assoc m k (f v))) {} m))")}) :node api/sexpr prn)
   )
