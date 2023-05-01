@@ -2,16 +2,26 @@
   (:require
     [clj-kondo.hooks-api :as api]))
 
+(defn node-value
+  [node]
+  (when node
+    (api/sexpr node)))
+
+(defn node-type
+  [node]
+  (when node
+    (api/tag node)))
+
 (defn analyze-defun-macro
   "analyze gateless rules defun macro"
   [{:keys [:node]}]
   (let [[var-name & children] (rest (:children node))
-        [var-fact & children] (if (and (= :token (api/tag (first children)))
-                                       (keyword? (api/sexpr (first children)))
+        [var-fact & children] (if (and (= :token (node-type (first children)))
+                                       (keyword? (node-value (first children)))
                                        (seq (rest children)))
                                 children
                                 (cons nil children))
-        [var-docs var-args & body] (if (= :token (api/tag (first children)))
+        [var-docs var-args & body] (if (= :token (node-type (first children)))
                                      children
                                      (cons nil children))
         new-meta (cond-> {}
@@ -28,8 +38,8 @@
   "analyze gateless rules defdata macro"
   [{:keys [:node]}]
   (let [[var-name & children] (rest (:children node))
-        [var-fact & body] (if (and (= :token (api/tag (first children)))
-                                   (keyword? (api/sexpr (first children)))
+        [var-fact & body] (if (and (= :token (node-type (first children)))
+                                   (keyword? (node-value (first children)))
                                    (seq (rest children)))
                             children
                             (cons nil children))
