@@ -23,4 +23,20 @@
         {:node (api/parse-string "(defun update-map [m f]
                                     (reduce-kv (fn [m k v]
                                                  (assoc m k (f v))) {} m))")}) :node api/sexpr prn)
+  (-> (clara-rules/analyze-defrule-macro
+        {:node (api/parse-string "(defrule unmatch-borrower-credit-report-context-singleton-rule
+                                    \"there can be only one\"
+                                    [?context-seq <- (acc/all) :from [:context/borrower-credit-report-no-match]]
+                                    [:test (> (count ?context-seq) 1)]
+                                    =>
+                                    (run! retract! ?context-seq))")}) :node api/sexpr prn)
+
+  (-> (clara-rules/analyze-defrule-macro
+        {:node (api/parse-string "(defrule ^:RUL-1812 doc-expiration-verification-rule-paystub
+                                    \"This rule verifies whether the given Paystub document is expired as per the guidelines set\"
+                                    [:test (<= (jt/time-between a b :days))]
+                                    =>
+                                    (insert! (->fact :context/valid-paystub-document
+                                                     {:header-id 123})))")})
+      :node api/sexpr prn)
   )

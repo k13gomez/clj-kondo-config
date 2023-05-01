@@ -27,6 +27,7 @@
               (and (= :token (node-type node))
                    (symbol? (node-value node))
                    (not (binding-node? node))
+                   (nil? (namespace (node-value node)))
                    (nil? (resolve (node-value node))))
               (cons node token-seq)
 
@@ -39,11 +40,16 @@
   "sequentially analyzes constraint expressions of clara rules and queries
   defined via defrule or defquery by sequentially analyzing its children lhs
   expressions and bindings."
-  [condition prev-bindings input-token production-args]
+  [fact-node condition prev-bindings input-token production-args]
   (let [[condition-args constraint-seq]
-        (if (= :vector (node-type (first condition)))
+        (cond
+          (= :vector (node-type (first condition)))
           [(first condition) (rest condition)]
-          [(api/vector-node (vec (extract-arg-tokens condition))) condition])
+
+          (symbol? (node-value fact-node))
+          [(api/vector-node (vec (extract-arg-tokens condition))) condition]
+
+          :else [])
         args-binding-set (set (map node-value (:children production-args)))
         prev-bindings-set (->> (mapcat (comp :children first) prev-bindings)
                                (filter binding-node?)
@@ -111,7 +117,7 @@
                                  (analyze-conditions (rest condition) (concat prev-bindings bindings) input-token production-args)
 
                                  :else
-                                 (analyze-constraints condition (concat prev-bindings bindings) input-token production-args))
+                                 (analyze-constraints fact-node condition (concat prev-bindings bindings) input-token production-args))
             condition-tokens (->> (mapcat first condition-bindings)
                                   (filter binding-node?))
             result-vector (api/vector-node (vec (list* fact-node condition-tokens)))
@@ -190,7 +196,7 @@
         production-seq (if production-opts (rest children) children)
         [condition-seq _ body-seq] (partition-by (comp #{'=>} node-value) production-seq)
         condition-bindings (analyze-conditions condition-seq [] input-token empty-args)
-        production-bindings (apply concat [] condition-bindings)
+        production-bindings (apply concat [(api/token-node '_) input-token] condition-bindings)
         production-output (->> (mapcat (comp :children first) condition-bindings)
                                (filter binding-node?)
                                (set)
