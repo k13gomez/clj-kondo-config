@@ -20,6 +20,21 @@
     (and (symbol? node-name)
          (str/starts-with? (name node-name) "?"))))
 
+(defn extract-arg-tokens
+  [node-seq]
+  (reduce (fn [token-seq node]
+            (cond
+              (and (= :token (node-type node))
+                   (symbol? (node-value node))
+                   (not (binding-node? node))
+                   (nil? (resolve (node-value node))))
+              (cons node token-seq)
+
+              (seq (:children node))
+              (concat token-seq (extract-arg-tokens (:children node)))
+
+              :else token-seq)) [] node-seq))
+
 (defn analyze-constraints
   "sequentially analyzes constraint expressions of clara rules and queries
   defined via defrule or defquery by sequentially analyzing its children lhs
@@ -28,7 +43,7 @@
   (let [[condition-args constraint-seq]
         (if (= :vector (node-type (first condition)))
           [(first condition) (rest condition)]
-          [(api/vector-node []) condition])
+          [(api/vector-node (vec (extract-arg-tokens condition))) condition])
         args-binding-set (set (map node-value (:children production-args)))
         prev-bindings-set (->> (mapcat (comp :children first) prev-bindings)
                                (filter binding-node?)
