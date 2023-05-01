@@ -164,12 +164,14 @@
                                 (vec production-bindings))
                               (api/vector-node
                                 (vec production-output))))
-        new-node (api/list-node
-                   (cond-> (list (api/token-node 'defn) production-name)
-                     production-docs (concat [production-docs])
-                     :always (concat [input-args])
-                     production-opts (concat [production-opts])
-                     :always (concat [production-result])))]
+        new-node (with-meta
+                   (api/list-node
+                     (cond-> (list (api/token-node 'defn) production-name)
+                       production-docs (concat [production-docs])
+                       :always (concat [input-args])
+                       production-opts (concat [production-opts])
+                       :always (concat [production-result])))
+                   {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
     {:node new-node}))
 
 (defn analyze-defrule-macro
@@ -201,10 +203,12 @@
                               (api/vector-node
                                 (vec production-output))
                               body-seq))
-        new-node (api/list-node
-                   (cond-> (list (api/token-node 'defn) production-name)
-                     production-docs (concat [production-docs])
-                     :always (concat [input-args])
-                     production-opts (concat [production-opts])
-                     :always (concat [production-result])))]
+        new-node (with-meta
+                   (api/list-node
+                     (cond-> (list (api/token-node 'defn) production-name)
+                       production-docs (concat [production-docs])
+                       :always (concat [input-args])
+                       production-opts (concat [production-opts])
+                       :always (concat [production-result])))
+                   {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
     {:node new-node}))
