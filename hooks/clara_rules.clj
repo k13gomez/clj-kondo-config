@@ -18,29 +18,55 @@
   [node]
   (let [node-name (node-value node)]
     (and (symbol? node-name)
-         (str/starts-with? (name node-name) "?"))))
+         (str/starts-with? (str node-name) "?"))))
+
+(defn- special-binding-node?
+  "determine if a symbol is a clara-rules special binding symbol in the form `?__<name>__`"
+  [node]
+  (let [node-name (node-value node)
+        node-name-str (str node-name)]
+    (and (symbol? node-name)
+         (str/starts-with? node-name-str "?__")
+         (str/ends-with? node-name-str "__"))))
+
+(defn- extract-special-tokens
+  [node-seq]
+  (->> (reduce (fn [token-seq node]
+                 (cond
+                   (and (= :token (node-type node))
+                        (special-binding-node? node)
+                        (nil? (namespace (node-value node))))
+                   (cons node token-seq)
+
+                   (seq (:children node))
+                   (concat token-seq (extract-special-tokens (:children node)))
+
+                   :else token-seq)) [] node-seq)
+       (set)
+       (sort-by node-value)))
 
 (defn extract-arg-tokens
   [node-seq]
-  (reduce (fn [token-seq node]
-            (cond
-              (and (= :token (node-type node))
-                   (symbol? (node-value node))
-                   (not (binding-node? node))
-                   (nil? (namespace (node-value node)))
-                   (nil? (resolve (node-value node))))
-              (cons node token-seq)
+  (->> (reduce (fn [token-seq node]
+                 (cond
+                   (and (= :token (node-type node))
+                        (symbol? (node-value node))
+                        (not (binding-node? node))
+                        (nil? (namespace (node-value node))))
+                   (cons node token-seq)
 
-              (seq (:children node))
-              (concat token-seq (extract-arg-tokens (:children node)))
+                   (seq (:children node))
+                   (concat token-seq (extract-arg-tokens (:children node)))
 
-              :else token-seq)) [] node-seq))
+                   :else token-seq)) [] node-seq)
+       (set)
+       (sort-by node-value)))
 
 (defn analyze-constraints
   "sequentially analyzes constraint expressions of clara rules and queries
   defined via defrule or defquery by sequentially analyzing its children lhs
   expressions and bindings."
-  [fact-node condition prev-bindings input-token production-args]
+  [fact-node condition allow-bindings? prev-bindings input-token production-args]
   (let [[condition-args constraint-seq]
         (cond
           (= :vector (node-type (first condition)))
@@ -62,8 +88,13 @@
           (if (nil? constraint-expr)
             bindings
             (let [constraint (:children constraint-expr)
-                  binding-nodes (when (= '= (node-value (first constraint)))
-                                  (seq (filter binding-node? (rest constraint))))
+                  binding-nodes (let [binding-tokens (seq (filter binding-node? (rest constraint)))
+                                      match-bindings-set (set/intersection (set (map node-value binding-tokens)) bindings-set)]
+                                  (when (and allow-bindings?
+                                             (contains? #{'= '==} (node-value (first constraint)))
+                                             (or (seq (filter (complement binding-node?) (rest constraint)))
+                                                 (not-empty match-bindings-set)))
+                                    binding-tokens))
                   next-bindings-set (-> (set (map node-value binding-nodes))
                                         (set/difference bindings-set))
                   binding-expr-nodes (seq (filter (comp next-bindings-set node-value) binding-nodes))
@@ -94,7 +125,7 @@
   defined via defrule and defquery by taking into account the optional
   result binding, optional args bindings and sequentially analyzing
   its children constraint expressions."
-  [condition-seq prev-bindings input-token production-args]
+  [condition-seq allow-bindings? prev-bindings input-token production-args]
   (loop [[condition-expr & more] condition-seq
          bindings []]
     (if (nil? condition-expr)
@@ -109,15 +140,18 @@
                                  (nil? condition)
                                  []
 
-                                 (contains? #{:not :or :and :exists} (node-value fact-node))
-                                 (analyze-conditions condition (concat prev-bindings bindings) input-token production-args)
+                                 (contains? #{:not} (node-value fact-node))
+                                 (analyze-conditions condition false (concat prev-bindings bindings) input-token production-args)
+
+                                 (contains? #{:or :and :exists} (node-value fact-node))
+                                 (analyze-conditions condition allow-bindings? (concat prev-bindings bindings) input-token production-args)
 
                                  (and (= :list (node-type fact-node))
                                       (= :from (-> condition first node-value)))
-                                 (analyze-conditions (rest condition) (concat prev-bindings bindings) input-token production-args)
+                                 (analyze-conditions (rest condition) allow-bindings? (concat prev-bindings bindings) input-token production-args)
 
                                  :else
-                                 (analyze-constraints fact-node condition (concat prev-bindings bindings) input-token production-args))
+                                 (analyze-constraints fact-node condition allow-bindings? (concat prev-bindings bindings) input-token production-args))
             condition-tokens (->> (mapcat first condition-bindings)
                                   (filter binding-node?))
             result-vector (api/vector-node (vec (list* fact-node condition-tokens)))
@@ -144,6 +178,54 @@
                                output-result-node))]]
         (recur more (concat bindings [next-bindings]))))))
 
+(defn analyze-parse-query-macro
+  "analyze clara-rules parse-query macro"
+  [{:keys [:node]}]
+  (let [input-token (api/token-node (gensym 'input))
+        input-args (api/vector-node
+                     [input-token])
+        [args conditions-node] (rest (:children node))
+        condition-seq (:children conditions-node)
+        special-tokens (extract-special-tokens condition-seq)
+        special-args (when (seq special-tokens)
+                       (api/vector-node
+                         (vec special-tokens)))
+        transformed-args (for [arg (:children args)]
+                           (let [v (node-value arg)]
+                             (if (keyword? v)
+                               (api/token-node (symbol v))
+                               arg)))
+        production-args (api/vector-node
+                          (if (empty? transformed-args)
+                            [(api/token-node '_)]
+                            (vec transformed-args)))
+        condition-bindings (analyze-conditions condition-seq true [] input-token production-args)
+        production-bindings (apply concat
+                                   (when special-args
+                                     [special-args input-token
+                                      (api/token-node '_) special-args])
+                                   [production-args input-token]
+                                   condition-bindings)
+        production-output (->> (mapcat (comp :children first) condition-bindings)
+                               (filter binding-node?)
+                               (set)
+                               (sort-by node-value))
+        production-result (api/list-node
+                            (list
+                              (api/token-node 'let)
+                              (api/vector-node
+                                (vec production-bindings))
+                              (api/vector-node
+                                (vec production-output))))
+        fn-node (api/list-node
+                  (list
+                    (api/token-node 'clojure.core/fn)
+                    input-args
+                    production-result))
+        new-node (api/map-node
+                   [(api/keyword-node :production) fn-node])]
+    {:node new-node}))
+
 (defn analyze-defquery-macro
   "analyze clara-rules defquery macro"
   [{:keys [:node]}]
@@ -156,9 +238,30 @@
         input-token (api/token-node (gensym 'input))
         input-args (api/vector-node
                      [input-token])
-        [production-args & condition-seq] (if production-opts (rest children) children)
-        condition-bindings (analyze-conditions condition-seq [] input-token production-args)
-        production-bindings (apply concat [production-args input-token] condition-bindings)
+        [args & condition-seq] (if production-opts (rest children) children)
+        special-tokens (extract-special-tokens condition-seq)
+        special-args (when (seq special-tokens)
+                       (api/vector-node
+                         (vec special-tokens)))
+        transformed-args (for [arg (:children args)]
+                           (let [v (node-value arg)
+                                 m (meta arg)]
+                             (if (keyword? v)
+                               (cond-> (api/token-node (symbol v))
+                                 (not-empty m)
+                                 (with-meta m))
+                               arg)))
+        production-args (api/vector-node
+                          (if (empty? transformed-args)
+                            [(api/token-node '_)]
+                            (vec transformed-args)))
+        condition-bindings (analyze-conditions condition-seq true [] input-token production-args)
+        production-bindings (apply concat
+                                   (when special-args
+                                     [special-args input-token
+                                      (api/token-node '_) special-args])
+                                   [production-args input-token]
+                                   condition-bindings)
         production-output (->> (mapcat (comp :children first) condition-bindings)
                                (filter binding-node?)
                                (set)
@@ -170,14 +273,61 @@
                                 (vec production-bindings))
                               (api/vector-node
                                 (vec production-output))))
+        fn-node (api/list-node
+                  (cond-> (list (api/token-node 'clojure.core/fn))
+                    production-docs (concat [production-docs])
+                    :always (concat [input-args])
+                    production-opts (concat [production-opts])
+                    :always (concat [production-result])))
         new-node (with-meta
                    (api/list-node
-                     (cond-> (list (api/token-node 'clojure.core/defn) production-name)
-                       production-docs (concat [production-docs])
-                       :always (concat [input-args])
-                       production-opts (concat [production-opts])
-                       :always (concat [production-result])))
+                     (list
+                       (api/token-node 'def) production-name
+                       (api/map-node
+                         [(api/keyword-node :production) fn-node])))
                    {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
+    {:node new-node}))
+
+(defn analyze-parse-rule-macro
+  "analyze clara-rules parse-rule macro"
+  [{:keys [:node]}]
+  (let [input-token (api/token-node (gensym 'input))
+        input-args (api/vector-node
+                     [input-token])
+        empty-args (api/vector-node [])
+        production-seq (:children node)
+        special-tokens (extract-special-tokens production-seq)
+        special-args (when (seq special-tokens)
+                       (api/vector-node
+                         (vec special-tokens)))
+        [conditions-node body-seq] production-seq
+        condition-seq (:children conditions-node)
+        condition-bindings (analyze-conditions condition-seq true [] input-token empty-args)
+        production-bindings (apply concat
+                                   (when special-args
+                                     [special-args input-token
+                                      (api/token-node '_) special-args])
+                                   [(api/token-node '_) input-token]
+                                   condition-bindings)
+        production-output (->> (mapcat (comp :children first) condition-bindings)
+                               (filter binding-node?)
+                               (set)
+                               (sort-by node-value))
+        production-result (api/list-node
+                            (list*
+                              (api/token-node 'let)
+                              (api/vector-node
+                                (vec production-bindings))
+                              (api/vector-node
+                                (vec production-output))
+                              body-seq))
+        fn-node (api/list-node
+                   (list
+                     (api/token-node 'clojure.core/fn)
+                     input-args
+                     production-result))
+        new-node (api/map-node
+                   [(api/keyword-node :production) fn-node])]
     {:node new-node}))
 
 (defn analyze-defrule-macro
@@ -194,9 +344,18 @@
                      [input-token])
         empty-args (api/vector-node [])
         production-seq (if production-opts (rest children) children)
+        special-tokens (extract-special-tokens production-seq)
+        special-args (when (seq special-tokens)
+                       (api/vector-node
+                         (vec special-tokens)))
         [condition-seq _ body-seq] (partition-by (comp #{'=>} node-value) production-seq)
-        condition-bindings (analyze-conditions condition-seq [] input-token empty-args)
-        production-bindings (apply concat [(api/token-node '_) input-token] condition-bindings)
+        condition-bindings (analyze-conditions condition-seq true [] input-token empty-args)
+        production-bindings (apply concat
+                                   (when special-args
+                                     [special-args input-token
+                                      (api/token-node '_) special-args])
+                                   [(api/token-node '_) input-token]
+                                   condition-bindings)
         production-output (->> (mapcat (comp :children first) condition-bindings)
                                (filter binding-node?)
                                (set)
@@ -209,12 +368,17 @@
                               (api/vector-node
                                 (vec production-output))
                               body-seq))
+        fn-node (api/list-node
+                  (cond-> (list (api/token-node 'clojure.core/fn))
+                    production-docs (concat [production-docs])
+                    :always (concat [input-args])
+                    production-opts (concat [production-opts])
+                    :always (concat [production-result])))
         new-node (with-meta
                    (api/list-node
-                     (cond-> (list (api/token-node 'clojure.core/defn) production-name)
-                       production-docs (concat [production-docs])
-                       :always (concat [input-args])
-                       production-opts (concat [production-opts])
-                       :always (concat [production-result])))
+                     (list
+                       (api/token-node 'def) production-name
+                       (api/map-node
+                         [(api/keyword-node :production) fn-node])))
                    {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
     {:node new-node}))

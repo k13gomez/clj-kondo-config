@@ -39,4 +39,18 @@
                                     (insert! (->fact :context/valid-paystub-document
                                                      {:header-id 123})))")})
       :node api/sexpr prn)
+
+  (-> (clara-rules/analyze-parse-query-fn
+        {:node (api/parse-string "(clara.rules.dsl/parse-query [] [[:not [Second]]
+                                                                   [:not [Third]]
+                                                                   [?fourth <- Fourth]])")})
+      :node api/sexpr prn)
+
+  (-> (clara-rules/analyze-defquery-macro
+        {:node (api/parse-string "(defquery cold-query
+                                    [:?l]
+                                    [Temperature (< temperature 50)
+                                     (= ?t temperature)
+                                     (= ?l location)])")})
+      :node api/sexpr prn)
   )
