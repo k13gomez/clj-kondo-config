@@ -1,14 +1,25 @@
-{:lint-as {clara.rules/defsession clojure.core/def
+{:lint-as {clojure.tools.macro/defsymbolmacro clojure.core/def
+           clara.rules/defsession clojure.core/def
+           rules.test-utils/deftestquery clojure.core/def
+           rules.test-utils/deftestmultiquery clojure.core/def
+           hiccup.def/defhtml clojure.core/defn
+           hiccup.def/defelem clojure.core/defn
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clara.tools.testing-utils/def-rules-test {:ignore [:unresolved-symbol
                                                                      :unresolved-var]}}
- :hooks {:analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
+ :hooks {:macroexpand {rules.test-utils/bind-test-ns-and-rule-sources hooks.gateless/bind-test-ns-and-rule-sources}
+         :analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
                         clara.rules/defrule hooks.clara-rules/analyze-defrule-macro
                         clara.rules.dsl/parse-query hooks.clara-rules/analyze-parse-query-macro
                         clara.rules.dsl/parse-rule hooks.clara-rules/analyze-parse-rule-macro
-                        rules.core/defun hooks.gateless-rules/analyze-defun-macro
-                        rules.core/defn hooks.gateless-rules/analyze-defun-macro
-                        rules.core/defdata hooks.gateless-rules/analyze-defdata-macro
-                        rules.data/defun hooks.gateless-rules/analyze-defun-macro
-                        rules.data/defn hooks.gateless-rules/analyze-defun-macro
-                        rules.data/defdata hooks.gateless-rules/analyze-defdata-macro}}}
+                        rules.core/defun hooks.gateless/analyze-defun-macro
+                        rules.core/defn hooks.gateless/analyze-defun-macro
+                        rules.core/defdata hooks.gateless/analyze-defdata-macro
+                        rules.data/defun hooks.gateless/analyze-defun-macro
+                        rules.data/defn hooks.gateless/analyze-defun-macro
+                        rules.data/defdata hooks.gateless/analyze-defdata-macro
+                        rules.accumulators.overlay/updates-> hooks.gateless/analyze-overlay-updates-macro
+                        aws-client.xray/with-segment hooks.gateless/analyze-with-aws-xray-macro
+                        aws-client.xray/with-subsegment hooks.gateless/analyze-with-aws-xray-macro
+                        aws-client.xray/with-sql-query-subsegment hooks.gateless/analyze-with-aws-xray-macro
+                        aws-client.xray/with-http-request-subsegment hooks.gateless/analyze-with-aws-xray-macro}}}

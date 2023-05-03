@@ -249,7 +249,7 @@
                              (if (keyword? v)
                                (cond-> (api/token-node (symbol v))
                                  (not-empty m)
-                                 (with-meta m))
+                                 (vary-meta merge m))
                                arg)))
         production-args (api/vector-node
                           (if (empty? transformed-args)
@@ -279,13 +279,13 @@
                     :always (concat [input-args])
                     production-opts (concat [production-opts])
                     :always (concat [production-result])))
-        new-node (with-meta
+        new-node (vary-meta
                    (api/list-node
                      (list
                        (api/token-node 'def) production-name
                        (api/map-node
                          [(api/keyword-node :production) fn-node])))
-                   {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
+                   merge {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
     {:node new-node}))
 
 (defn analyze-parse-rule-macro
@@ -374,11 +374,11 @@
                     :always (concat [input-args])
                     production-opts (concat [production-opts])
                     :always (concat [production-result])))
-        new-node (with-meta
+        new-node (vary-meta
                    (api/list-node
                      (list
                        (api/token-node 'def) production-name
                        (api/map-node
                          [(api/keyword-node :production) fn-node])))
-                   {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
+                   merge {:clj-kondo/ignore [:clojure-lsp/unused-public-var]})]
     {:node new-node}))
