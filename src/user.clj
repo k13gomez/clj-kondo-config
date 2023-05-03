@@ -11,6 +11,8 @@
 
 ;; scratch
 (comment
+  (declare insert! ->fact)
+
   (-> (clara-rules/analyze-defquery-macro {:node query-node}) :node api/sexpr prn)
   (-> (clara-rules/analyze-defrule-macro {:node rule-node}) :node api/sexpr prn)
 
@@ -34,11 +36,12 @@
   (-> (clara-rules/analyze-defrule-macro
         {:node (api/parse-string "(defrule ^:RUL-1812 doc-expiration-verification-rule-paystub
                                     \"This rule verifies whether the given Paystub document is expired as per the guidelines set\"
-                                    [:test (<= (jt/time-between a b :days))]
+                                    [?context <- :test/context]
+                                    [?foobar <- :foo/bar [{:keys [foo]}] (= foo (:foo ?context))]
+                                    [?barfoo <- :bar/foo]
                                     =>
-                                    (insert! (->fact :context/valid-paystub-document
-                                                     {:header-id 123})))")})
-      :node api/sexpr prn)
+                                    (insert! (->fact :context/foobar {:value ?barfoo})))")})
+      :node api/sexpr)
 
   (-> (clara-rules/analyze-parse-query-macro
         {:node (api/parse-string "(clara.rules.dsl/parse-query [] [[:not [Second]]

@@ -20,6 +20,10 @@
     (and (symbol? node-name)
          (str/starts-with? (str node-name) "?"))))
 
+(defn- fact-result-node?
+  [node]
+  (some-> node meta ::fact-result))
+
 (defn- special-binding-node?
   "determine if a symbol is a clara-rules special binding symbol in the form `?__<name>__`"
   [node]
@@ -133,7 +137,9 @@
       (let [condition (:children condition-expr)
             [result-token fact-node & condition] (if (= '<- (-> condition second node-value))
                                                    (cons (api/vector-node
-                                                           [(first condition)]) (nnext condition))
+                                                           [(vary-meta
+                                                              (first condition)
+                                                              assoc ::fact-result true)]) (nnext condition))
                                                    (cons (api/vector-node
                                                            [(api/token-node '_)]) condition))
             condition-bindings (cond
@@ -311,6 +317,7 @@
                                    condition-bindings)
         production-output (->> (mapcat (comp :children first) condition-bindings)
                                (filter binding-node?)
+                               (remove fact-result-node?)
                                (set)
                                (sort-by node-value))
         production-result (api/list-node
@@ -358,6 +365,7 @@
                                    condition-bindings)
         production-output (->> (mapcat (comp :children first) condition-bindings)
                                (filter binding-node?)
+                               (remove fact-result-node?)
                                (set)
                                (sort-by node-value))
         production-result (api/list-node
