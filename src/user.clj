@@ -43,6 +43,13 @@
                                     (insert! (->fact :context/foobar {:value ?barfoo})))")})
       :node api/sexpr)
 
+  (-> (clara-rules/analyze-defrule-macro
+        {:node (api/parse-string "(defrule doc-expiration-verification-rule-paystub
+                                    \"comments\"
+                                    =>
+                                    (insert! (->fact :context/foobar {:value ?barfoo})))")})
+      some?)
+
   (-> (clara-rules/analyze-parse-query-macro
         {:node (api/parse-string "(clara.rules.dsl/parse-query [] [[:not [Second]]
                                                                    [:not [Third]]

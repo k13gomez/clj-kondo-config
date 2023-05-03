@@ -355,7 +355,8 @@
         special-args (when (seq special-tokens)
                        (api/vector-node
                          (vec special-tokens)))
-        [condition-seq _ body-seq] (partition-by (comp #{'=>} node-value) production-seq)
+        [body-seq _ condition-seq] (->> (partition-by (comp #{'=>} node-value) production-seq)
+                                        (reverse))
         condition-bindings (analyze-conditions condition-seq true [] input-token empty-args)
         production-bindings (apply concat
                                    (when special-args
