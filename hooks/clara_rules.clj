@@ -295,12 +295,12 @@
         input-args (api/vector-node
                      [input-token])
         empty-args (api/vector-node [])
-        production-seq (:children node)
+        production-seq (rest (:children node))
         special-tokens (extract-special-tokens production-seq)
         special-args (when (seq special-tokens)
                        (api/vector-node
                          (vec special-tokens)))
-        [conditions-node body-seq] production-seq
+        [conditions-node body-node] production-seq
         condition-seq (:children conditions-node)
         condition-bindings (analyze-conditions condition-seq true [] input-token empty-args)
         production-bindings (apply concat
@@ -314,13 +314,13 @@
                                (set)
                                (sort-by node-value))
         production-result (api/list-node
-                            (list*
+                            (list
                               (api/token-node 'let)
                               (api/vector-node
                                 (vec production-bindings))
                               (api/vector-node
                                 (vec production-output))
-                              body-seq))
+                              body-node))
         fn-node (api/list-node
                    (list
                      (api/token-node 'clojure.core/fn)

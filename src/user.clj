@@ -1,7 +1,7 @@
 (ns user
   (:require [clj-kondo.hooks-api :as api]
             [hooks.clara-rules :as clara-rules]
-            [hooks.gateless-rules :as gateless-rules]))
+            [hooks.gateless :as gateless]))
 
 (def query-node
   (api/parse-string (slurp "resources/clara/foo_query.clj")))
@@ -14,12 +14,12 @@
   (-> (clara-rules/analyze-defquery-macro {:node query-node}) :node api/sexpr prn)
   (-> (clara-rules/analyze-defrule-macro {:node rule-node}) :node api/sexpr prn)
 
-  (-> (gateless-rules/analyze-defun-macro
+  (-> (gateless/analyze-defun-macro
         {:node (api/parse-string "(defun foo-bar :foo/bar [foo] foo)")}) :node api/sexpr prn)
-  (-> (gateless-rules/analyze-defdata-macro
+  (-> (gateless/analyze-defdata-macro
         {:node (api/parse-string "(defdata loan-batch :loaders/batch \"foobar\")")}) :node api/sexpr prn)
 
-  (-> (gateless-rules/analyze-defun-macro
+  (-> (gateless/analyze-defun-macro
         {:node (api/parse-string "(defun update-map [m f]
                                     (reduce-kv (fn [m k v]
                                                  (assoc m k (f v))) {} m))")}) :node api/sexpr prn)
@@ -40,10 +40,16 @@
                                                      {:header-id 123})))")})
       :node api/sexpr prn)
 
-  (-> (clara-rules/analyze-parse-query-fn
+  (-> (clara-rules/analyze-parse-query-macro
         {:node (api/parse-string "(clara.rules.dsl/parse-query [] [[:not [Second]]
                                                                    [:not [Third]]
                                                                    [?fourth <- Fourth]])")})
+      :node api/sexpr prn)
+
+  (-> (clara-rules/analyze-parse-rule-macro
+        {:node (api/parse-string "(dsl/parse-rule
+                                    [[::cold]]
+                                    (insert! (->fact ::hot nil)))")})
       :node api/sexpr prn)
 
   (-> (clara-rules/analyze-defquery-macro
