@@ -1,4 +1,5 @@
-{:lint-as {clojure.tools.macro/defsymbolmacro clojure.core/def
+{:skip-comments true
+ :lint-as {clojure.tools.macro/defsymbolmacro clojure.core/def
            clara.rules/defsession clojure.core/def
            rules.test-utils/deftestquery clojure.core/def
            rules.test-utils/deftestmultiquery clojure.core/def
@@ -6,7 +7,9 @@
            hiccup.def/defelem clojure.core/defn
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clara.tools.testing-utils/def-rules-test {:ignore [:unresolved-symbol
-                                                                     :unresolved-var]}}
+                                                                     :unresolved-var]}
+                  clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
+                                                               :unresolved-var]}}
  :linters {:unresolved-var {:exclude [digest/md2
                                       digest/md5
                                       digest/sha
@@ -19,7 +22,17 @@
                                       digest/sha3-224
                                       digest/sha3-256
                                       digest/sha3-384
-                                      digest/sha3-512]}}
+                                      digest/sha3-512]}
+           :unresolved-symbol {:exclude [clara.rules/query
+                                         clara.rules/fire-rules
+                                         clara.rules/mk-session
+                                         clara.rules/defrule
+                                         clara.rules/defquery
+                                         clara.rules/retract!
+                                         clara.rules/insert!
+                                         clara.rules/insert-all!
+                                         clara.rules/insert-unconditional!
+                                         clara.rules/insert-all-unconditional!]}}
  :hooks {:macroexpand {rules.test-utils/bind-test-ns-and-rule-sources hooks.gateless/bind-test-ns-and-rule-sources}
          :analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
                         clara.rules/defrule hooks.clara-rules/analyze-defrule-macro
