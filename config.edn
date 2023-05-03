@@ -7,6 +7,19 @@
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clara.tools.testing-utils/def-rules-test {:ignore [:unresolved-symbol
                                                                      :unresolved-var]}}
+ :linters {:unresolved-var {:exclude [digest/md2
+                                      digest/md5
+                                      digest/sha
+                                      digest/sha-1
+                                      digest/sha-224
+                                      digest/sha-256
+                                      digest/sha-384
+                                      digest/sha-512
+                                      digest/sha1
+                                      digest/sha3-224
+                                      digest/sha3-256
+                                      digest/sha3-384
+                                      digest/sha3-512]}}
  :hooks {:macroexpand {rules.test-utils/bind-test-ns-and-rule-sources hooks.gateless/bind-test-ns-and-rule-sources}
          :analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
                         clara.rules/defrule hooks.clara-rules/analyze-defrule-macro
