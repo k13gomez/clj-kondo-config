@@ -75,7 +75,7 @@
           (symbol? (node-value fact-node))
           [(api/vector-node (vec (extract-arg-tokens condition))) condition]
 
-          :else [])
+          :else [(api/vector-node []) condition])
         args-binding-set (set (map node-value (:children production-args)))
         prev-bindings-set (->> (mapcat (comp :children first) prev-bindings)
                                (filter binding-node?)
