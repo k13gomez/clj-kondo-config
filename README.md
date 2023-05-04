@@ -9,7 +9,7 @@ Method of installation is to copy or merge the config.edn for clj-kondo and copy
 
 ```bash
 $ mkdir -p ~/.config/clj-kondo
-$ git clone git@github.com:k13gomez/clj-kondo-config.git ~/.config/clj-kondo
+$ git clone https://github.com/k13gomez/clj-kondo-config.git ~/.config/clj-kondo
 ```
 
 ### Update clj-kondo configuration
