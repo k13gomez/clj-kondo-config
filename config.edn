@@ -6,9 +6,7 @@
            hiccup.def/defhtml clojure.core/defn
            hiccup.def/defelem clojure.core/defn
            clara.rules.platform/eager-for clojure.core/for}
- :config-in-call {clara.tools.testing-utils/def-rules-test {:ignore [:unresolved-symbol
-                                                                     :unresolved-var]}
-                  clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
+ :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
                                                                :unresolved-var]}}
  :linters {:unresolved-var {:exclude [digest/md2
                                       digest/md5
@@ -38,6 +36,7 @@
                         clara.rules/defrule hooks.clara-rules/analyze-defrule-macro
                         clara.rules.dsl/parse-query hooks.clara-rules/analyze-parse-query-macro
                         clara.rules.dsl/parse-rule hooks.clara-rules/analyze-parse-rule-macro
+                        clara.tools.testing-utils/def-rules-test hooks.clara-rules/analyze-def-rules-test-macro
                         rules.core/defun hooks.gateless/analyze-defun-macro
                         rules.core/defn hooks.gateless/analyze-defun-macro
                         rules.core/defdata hooks.gateless/analyze-defdata-macro

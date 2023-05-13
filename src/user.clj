@@ -1,5 +1,6 @@
 (ns user
   (:require [clj-kondo.hooks-api :as api]
+            [clojure.string :as str]
             [hooks.clara-rules :as clara-rules]
             [hooks.gateless :as gateless]))
 
@@ -9,9 +10,14 @@
 (def rule-node
   (api/parse-string (slurp "resources/clara/foo_rule.clj")))
 
+(def utils-node
+  (api/parse-string (slurp "resources/clara/test_utils.clj")))
+
 ;; scratch
 (comment
   (declare insert! ->fact)
+
+  (-> (clara-rules/analyze-def-rules-test-macro {:node utils-node}) :node api/sexpr)
 
   (-> (clara-rules/analyze-defquery-macro {:node query-node}) :node api/sexpr prn)
   (-> (clara-rules/analyze-defrule-macro {:node rule-node}) :node api/sexpr prn)
@@ -68,5 +74,5 @@
                                     [Temperature (< temperature 50)
                                      (= ?t temperature)
                                      (= ?l location)])")})
-      :node api/sexpr prn)
-  )
+      :node api/sexpr prn))
+  
