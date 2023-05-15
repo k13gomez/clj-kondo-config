@@ -8,7 +8,8 @@
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
                                                                :unresolved-var]}}
- :linters {:unresolved-var {:exclude [digest/md2
+ :linters {:unresolved-var {:exclude [taoensso.carmine
+                                      digest/md2
                                       digest/md5
                                       digest/sha
                                       digest/sha-1
