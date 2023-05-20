@@ -7,7 +7,11 @@
            hiccup.def/defelem clojure.core/defn
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
-                                                               :unresolved-var]}}
+                                                               :unresolved-var]}
+                  core/guard {:ignore [:unresolved-symbol
+                                       :unresolved-var]}
+                  core/unguard {:ignore [:unresolved-symbol
+                                         :unresolved-var]}}
  :linters {:unresolved-var {:exclude [taoensso.carmine
                                       digest/md2
                                       digest/md5
