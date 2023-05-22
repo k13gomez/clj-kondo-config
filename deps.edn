@@ -1,6 +1,7 @@
 {:paths ["src"]
  :deps {org.clojure/clojure {:mvn/version "1.10.1"}
-        clj-kondo/clj-kondo {:mvn/version "2023.04.14"}}
+        clj-kondo/clj-kondo {:mvn/version "2023.04.14"}
+        com.cerner/clara-rules {:mvn/version "0.21.2"}}
  ;for more examples of aliases see: https://github.com/seancorfield/dot-clojure
  :aliases
  {:repl {:extra-deps {nrepl/nrepl {:mvn/version "0.8.3"}

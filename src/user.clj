@@ -40,6 +40,52 @@
                                     (run! retract! ?context-seq))")}) :node api/sexpr prn)
 
   (-> (clara-rules/analyze-defrule-macro
+        {:node (api/parse-string "(defrule find-wind-speeds-without-temp
+                                    [?w <- WindSpeed
+                                     (not= this ())
+                                     (= ?loc location)]
+                                    [:not [Temperature (= ?loc location)]]
+                                    =>
+                                    (insert! (->UnpairedWindSpeed ?w)))")}) :node api/sexpr)
+
+  (def find-wind-speeds-without-temp
+    {:production
+     (fn
+       [input25663]
+       (let
+         [_
+          input25663
+          [?loc ?w]
+          (let
+            [[= location not= this this]
+             input25663
+             [_]
+             (not= this ())
+             [?loc]
+             input25663
+             [?loc]
+             (= ?loc location)
+             [?w]
+             [WindSpeed]]
+            [?loc ?w])
+          [_]
+          (let
+            [[_]
+             (let
+               [[= location this]
+                input25663
+                [_]
+                (= ?loc location)
+                [_]
+                [Temperature]]
+               [nil])
+             [_]
+             [:not]]
+            [nil])]
+         [?loc]
+         (insert! (->UnpairedWindSpeed ?w))))})
+
+  (-> (clara-rules/analyze-defrule-macro
         {:node (api/parse-string "(defrule ^:RUL-1812 doc-expiration-verification-rule-paystub
                                     \"This rule verifies whether the given Paystub document is expired as per the guidelines set\"
                                     [?context <- :test/context]
