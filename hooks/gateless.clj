@@ -60,7 +60,7 @@
         new-node (api/list-node
                    (list*
                      (api/token-node 'clojure.core/->)
-                     (api/map-node [])
+                     (api/token-node 'nil)
                      children))]
     {:node new-node}))
 
@@ -81,44 +81,44 @@
 (defmacro bind-test-ns-and-rule-sources
   [& _args]
   `(do
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'compile-rules!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'compile-rules!
        []
        :done)
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query-map!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query-map!
        [~'facts ~'query-map & {:as ~'options}]
        [:done ~'facts ~'query-map ~'options])
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query!
        [~'facts ~'query]
        (-> (~'run-rules-and-query-map! ~'facts {[:output :one :output] ~'query})
            (:output)))
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query-one!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query-one!
        [~'facts ~'query ~'k]
        (-> (~'run-rules-and-query-map! ~'facts {[:output :one ~'k] ~'query})
            (:output)))
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query-all!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query-all!
        [~'facts ~'query ~'k]
        (-> (~'run-rules-and-query-map! ~'facts {[:output :all ~'k] ~'query})
            (:output)))
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query-sorted!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query-sorted!
        [~'facts ~'query ~'s ~'k]
        (-> (~'run-rules-and-query-map!
              ~'facts
              {[:output (partial sort-by ~'s) ~'k] ~'query})
            (:output)))
 
-     #_{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
-     (defn ~'run-rules-and-query-set!
+     (defn ^{:clj-kondo/ignore [:clojure-lsp/unused-public-var]}
+       ~'run-rules-and-query-set!
        [~'facts ~'query ~'k]
        (-> (~'run-rules-and-query-map! ~'facts {[:output :set ~'k] ~'query})
            (:output)))

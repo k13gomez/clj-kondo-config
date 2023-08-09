@@ -5,6 +5,10 @@
            rules.test-utils/deftestmultiquery clojure.core/def
            hiccup.def/defhtml clojure.core/defn
            hiccup.def/defelem clojure.core/defn
+           diehard.core/defcircuitbreaker clojure.core/def
+           diehard.core/defratelimiter clojure.core/def
+           diehard.core/defretrypolicy clojure.core/def
+           diehard.core/defbulkhead clojure.core/def
            clara.rules.platform/eager-for clojure.core/for}
  :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
                                                                :unresolved-var]}
