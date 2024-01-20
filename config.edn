@@ -17,6 +17,19 @@
                   core/unguard {:ignore [:unresolved-symbol
                                          :unresolved-var]}}
  :linters {:unresolved-var {:exclude [taoensso.carmine
+                                      clj-commons.digest/md2
+                                      clj-commons.digest/md5
+                                      clj-commons.digest/sha
+                                      clj-commons.digest/sha-1
+                                      clj-commons.digest/sha-224
+                                      clj-commons.digest/sha-256
+                                      clj-commons.digest/sha-384
+                                      clj-commons.digest/sha-512
+                                      clj-commons.digest/sha1
+                                      clj-commons.digest/sha3-224
+                                      clj-commons.digest/sha3-256
+                                      clj-commons.digest/sha3-384
+                                      clj-commons.digest/sha3-512
                                       digest/md2
                                       digest/md5
                                       digest/sha
@@ -56,4 +69,5 @@
                         aws-client.xray/with-segment hooks.gateless/analyze-with-aws-xray-macro
                         aws-client.xray/with-subsegment hooks.gateless/analyze-with-aws-xray-macro
                         aws-client.xray/with-sql-query-subsegment hooks.gateless/analyze-with-aws-xray-macro
-                        aws-client.xray/with-http-request-subsegment hooks.gateless/analyze-with-aws-xray-macro}}}
+                        aws-client.xray/with-http-request-subsegment hooks.gateless/analyze-with-aws-xray-macro
+                        stubby.core/with-http-server! hooks.gateless/analyze-stub-with-http-server-macro}}}

@@ -78,6 +78,18 @@
                      body-seq))]
     {:node new-node}))
 
+(defn analyze-stub-with-http-server-macro
+  [{:keys [:node]}]
+  (let [children (rest (:children node))
+        [server-binding & body-seq] children
+        new-node (api/list-node
+                   (list*
+                     (api/token-node 'let)
+                     (api/vector-node
+                       [server-binding (api/map-node {})])
+                     body-seq))]
+    {:node new-node}))
+
 (defmacro bind-test-ns-and-rule-sources
   [& _args]
   `(do
