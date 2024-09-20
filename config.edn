@@ -9,7 +9,8 @@
            diehard.core/defratelimiter clojure.core/def
            diehard.core/defretrypolicy clojure.core/def
            diehard.core/defbulkhead clojure.core/def
-           clara.rules.platform/eager-for clojure.core/for}
+           clara.rules.platform/eager-for clojure.core/for
+           http-client.core/def-http-method clojure.core/declare}
  :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
                                                                :unresolved-var]}
                   core/guard {:ignore [:unresolved-symbol
