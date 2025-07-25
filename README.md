@@ -18,5 +18,4 @@ $ git clone https://github.com/k13gomez/clj-kondo-config.git ~/.config/clj-kondo
 $ mkdir -p ~/.config/clj-kondo/hooks
 $ curl -o ~/.config/clj-kondo/config.edn https://raw.githubusercontent.com/k13gomez/clj-kondo-config/main/config.edn
 $ curl -o ~/.config/clj-kondo/hooks/clara_rules.clj https://raw.githubusercontent.com/k13gomez/clj-kondo-config/main/hooks/clara_rules.clj
-$ curl -o ~/.config/clj-kondo/hooks/gateless_rules.clj https://raw.githubusercontent.com/k13gomez/clj-kondo-config/main/hooks/gateless_rules.clj
 ```

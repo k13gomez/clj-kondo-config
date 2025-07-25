@@ -1,15 +1,14 @@
 {:skip-comments true
  :lint-as {clojure.tools.macro/defsymbolmacro clojure.core/def
-           clara.rules/defsession clojure.core/def
-           rules.test-utils/deftestquery clojure.core/def
-           rules.test-utils/deftestmultiquery clojure.core/def
            hiccup.def/defhtml clojure.core/defn
            hiccup.def/defelem clojure.core/defn
            diehard.core/defcircuitbreaker clojure.core/def
            diehard.core/defratelimiter clojure.core/def
            diehard.core/defretrypolicy clojure.core/def
            diehard.core/defbulkhead clojure.core/def
+           clara.rules/defsession clojure.core/def
            clara.rules.platform/eager-for clojure.core/for
+           clara.rules.platform/compute-for clojure.core/for
            http-client.core/def-http-method clojure.core/declare}
  :config-in-call {clojure.tools.macro/defsymbolmacro {:ignore [:unresolved-symbol
                                                                :unresolved-var]}
@@ -54,21 +53,8 @@
                                          clara.rules/insert-all!
                                          clara.rules/insert-unconditional!
                                          clara.rules/insert-all-unconditional!]}}
- :hooks {:macroexpand {rules.test-utils/bind-test-ns-and-rule-sources hooks.gateless/bind-test-ns-and-rule-sources}
-         :analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
+ :hooks {:analyze-call {clara.rules/defquery hooks.clara-rules/analyze-defquery-macro
                         clara.rules/defrule hooks.clara-rules/analyze-defrule-macro
                         clara.rules.dsl/parse-query hooks.clara-rules/analyze-parse-query-macro
                         clara.rules.dsl/parse-rule hooks.clara-rules/analyze-parse-rule-macro
-                        clara.tools.testing-utils/def-rules-test hooks.clara-rules/analyze-def-rules-test-macro
-                        rules.core/defun hooks.gateless/analyze-defun-macro
-                        rules.core/defn hooks.gateless/analyze-defun-macro
-                        rules.core/defdata hooks.gateless/analyze-defdata-macro
-                        rules.data/defun hooks.gateless/analyze-defun-macro
-                        rules.data/defn hooks.gateless/analyze-defun-macro
-                        rules.data/defdata hooks.gateless/analyze-defdata-macro
-                        rules.accumulators.overlay/updates-> hooks.gateless/analyze-overlay-updates-macro
-                        aws-client.xray/with-segment hooks.gateless/analyze-with-aws-xray-macro
-                        aws-client.xray/with-subsegment hooks.gateless/analyze-with-aws-xray-macro
-                        aws-client.xray/with-sql-query-subsegment hooks.gateless/analyze-with-aws-xray-macro
-                        aws-client.xray/with-http-request-subsegment hooks.gateless/analyze-with-aws-xray-macro
-                        stubby.core/with-http-server! hooks.gateless/analyze-stub-with-http-server-macro}}}
+                        clara.tools.testing-utils/def-rules-test hooks.clara-rules/analyze-def-rules-test-macro}}}
